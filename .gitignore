@@ -161,3 +161,6 @@ cython_debug/
 
 #ignore connection setting
 connect.py
+
+#ignore all .db file
+*.db
