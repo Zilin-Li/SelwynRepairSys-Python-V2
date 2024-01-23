@@ -1,22 +1,33 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>Curent Job List</h2>
-
-<!-- code to display list of jobs-->
-<table>
-    <tr>
-        <th>Job ID</th>
-        <th>Customer ID</th>
-        <th>Date</th>
-    </tr>
-    {% for job in job_list %}
-        <tr>
-            {% for field in job %}
-                <td>{{field}}</td>
-            {% endfor %}
-        </tr>
-    {% endfor %}
-</table>
+<div class="container" style="max-width: 80%;">
+    <h2 class="text-center my-4">Current Job List</h2>
+    <div style="max-height: 400px; overflow-y: auto;">  
+        <table class="table  table-bordered table-striped table-hover">
+            <thead class="text-center table-primary fw-bold">
+                <tr>
+                    <th scope="col">Job ID</th>
+                    <th scope="col">Customer</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Job detail</th>
+                </tr>
+            </thead>
+            <tbody class="table-group-divider text-center">
+                {% for job in job_list %}
+                    <tr>
+                        {% for field in job %}
+                            <td>{{field}}</td>
+                        {% endfor %}
+                        <td>
+                            <a href="{{ url_for('jobdetail', job_id=job[0]) }}" class="btn btn-primary btn-sm">Job detail</a>
+                        </td>
+                    </tr> 
+                    
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
 {% endblock %}

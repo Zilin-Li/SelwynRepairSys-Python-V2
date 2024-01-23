@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container p-2 my-4 border rounded shadow-sm" style="max-width: 80%;">
+    <h2 class="text-center my-4">Job Details</h2>
+   
+    <div class = "jobinfo">
+        <p> Job ID: {{customer_job[0][0]}}</p>
+        <p> Job Date: {{ customer_job[0][4].strftime('%Y-%m-%d') }}</p>
+    </div>
+    <div class ="customerinfo">
+        <div>
+            <p> Customer: {{customer_job[0][1]}}</p>
+            <p> Email: {{ customer_job[0][2] }}</p>
+            <p> Phone: {{ customer_job[0][3] }}</p>
+        </div>
+        <div class ="vehicleinfo">
+            vehicle information
+        </div>
+    </div>
+    <div>
+        <p>Customer Demanded Repairs - Services</p>
+        <div style="max-height: 400px; overflow-y: auto;">  
+            <table class="table  table-bordered table-striped table-hover">
+                <thead class="text-center table-primary fw-bold">
+                    <tr>
+                        <th scope="col">Service ID</th>
+                        <th scope="col">Service Name</th>
+                        <th scope="col">Qty</th>
+                        <th scope="col">Unit Price</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider text-center">
+                    {% for service in services_qty %}
+                        <tr>
+                            {% for field in service %}
+                                <td>{{field}}</td>
+                            {% endfor %}
+                            <td>
+                                <a href="{{ url_for('jobdetail', job_id=customer_job[0][0]) }}" class="btn btn-primary btn-sm">Job Delete</a>
+                            </td>
+                        </tr>   
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+    <div>
+        <p>Customer Demanded Repairs - Parts</p>
+        <div style="max-height: 400px; overflow-y: auto;">  
+            <table class="table  table-bordered table-striped table-hover">
+                <thead class="text-center table-primary fw-bold">
+                    <tr>
+                        <th scope="col">Part ID</th>
+                        <th scope="col">Part Name</th>
+                        <th scope="col">Qty</th>
+                        <th scope="col">Unit Price</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider text-center">
+                    {% for part in parts_qty %}
+                        <tr>
+                            {% for field in part %}
+                                <td>{{field}}</td>
+                            {% endfor %}
+                            <td>
+                                <a href="{{ url_for('jobdetail', job_id=customer_job[0][0]) }}" class="btn btn-primary btn-sm">Job Delete</a>
+                            </td>
+                        </tr>   
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>        
+    </div>
+
+    <div class="addServices">
+        <form method="post" action="{{ url_for('add_service_to_job', job_id=customer_job[0][0]) }}">
+            <div class="form-group">
+              <label for="service_id">Service</label>
+              <select class="form-control" id="service_id" name="service_id">
+                {% for service in service_list %}
+                  <option value="{{ service[0] }}">{{ service[1] }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="addqty">Quantity</label>
+              <input type="number" class="form-control" id="addqty" name="addqty" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Service</button>
+          </form>
+    </div>
+
+    <div class="addParts">
+        <form method="post" action="{{ url_for('add_part_to_job', job_id=customer_job[0][0]) }}">
+            <div class="form-group">
+              <label for="part_id">Part</label>
+              <select class="form-control" id="part_id" name="part_id">
+                {% for part in part_list %}
+                  <option value="{{ part[0] }}">{{ part[1] }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="addqty">Quantity</label>
+              <input type="number" class="form-control" id="addqty" name="addqty" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Part</button>
+          </form>
+    </div>
+
+
+   
+</div>
+
+
+
+{%print(customer_job)%} </br>
+{%print(services_qty)%} </br>
+{%print(parts_qty)%} </br>
+{%print(part_list)%} </br>
+{%print(service_list)%} </br>
+{%print(existing_service)%} </br>
+
+
+
+{% endblock %}

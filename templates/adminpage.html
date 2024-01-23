@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Left Sidebar Navigation -->
+        <div class="col-md-2 sticky-top py-4 vh-100 bg-dark d-flex flex-column justify-content-start"> <!-- Updated classes for centering -->
+            <nav class="nav flex-column">
+                <a class="btn btn-dark my-2 w-100 border-bottom" href="{{ url_for('customers') }}">Customers</a> <!-- Use btn and btn-secondary classes for button style -->
+                <a class="btn btn-dark my-2 w-100 border-bottom" href="{{ url_for('services') }}">Services</a>
+                <a class="btn btn-dark my-2 w-100 border-bottom" href="{{ url_for('parts') }}">Parts</a>
+                <a class="btn btn-dark my-2 w-100 border-bottom" href="{{ url_for('booking') }}">Booking</a>
+                <a class="btn btn-dark my-2 w-100 border-bottom" href="{{ url_for('payments') }}">Payments</a>
+            </nav>
+            
+            
+        </div>
+
+        <!-- Right Content Section -->
+        <div class="col-md-10">
+            {% block admincontent %}
+                <!-- Your admin content goes here -->
+            {% endblock %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
