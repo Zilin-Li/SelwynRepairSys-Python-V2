@@ -126,10 +126,12 @@ def jobdetail(job_id):
     
     connection.execute(parts_query)
     parts_list = connection.fetchall()
+    
     # Additionally, get the service_total and part_total from the query parameters if they exist.
-    service_total = request.args.get('service_total', 0)
-    part_total = request.args.get('part_total', 0)
-   
+    service_total ,part_total = calculate_totals(job_id)
+    service_total = service_total[0][0] if service_total[0][0] else 0
+    part_total = part_total[0][0] if part_total[0][0] else 0
+    update_job_total(job_id, service_total+part_total)
     
     return render_template("jobdetail.html",customer_job=customer_job_info, \
             services_qty=service_qty_info, parts_qty=part_qty_info, \
@@ -161,6 +163,7 @@ def add_service_to_job(job_id):
     connection.fetchall()
     new_qty = 0
     quantity= 0 
+    
     return redirect(url_for('jobdetail', job_id=job_id))
 
 # Used to add part to a specific job
@@ -187,24 +190,18 @@ def add_part_to_job(job_id):
     connection.fetchall()
     new_qty = 0
     part_quantity =0
+
     return redirect(url_for('jobdetail', job_id=job_id))
 
 
 @app.route("/currentjobs/jobdetail/complete_job/<int:job_id>")
 
 def complete_job(job_id):
-    # Step 1: Calculate service and part totals.
-    service_total, part_total = calculate_totals(job_id)
-    
-
-    # Step 2: Update the job total in the database.
-    update_job_total(job_id, service_total+part_total)
-    
-    # Step 3: Set the job as completed.
+  # Set the job as completed.
     update_job_status(job_id)
     
-    # Step 4: Redirect to the job detail page with the updated info.
-    return redirect(url_for("jobdetail", job_id=job_id, service_total=service_total,part_total=part_total))
+# Redirect to the job detail page with the updated info.
+    return redirect(url_for("jobdetail", job_id=job_id))
 
 def calculate_totals(job_id):
     service_total_query ="""
@@ -222,12 +219,10 @@ def calculate_totals(job_id):
     connection = getCursor()
     connection.execute(service_total_query, (job_id,))
     service_total=connection.fetchall()
-    service_total=service_total[0]
+    # service_total=service_total[0]
     
     connection.execute(part_total_query, (job_id,))
     part_total=connection.fetchall()
-    part_total =part_total[0]
-    
     # Execute queries to get service total and part total...
     return service_total, part_total
 
