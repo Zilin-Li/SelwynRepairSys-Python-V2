@@ -6,11 +6,11 @@
         <!-- Left Sidebar Navigation -->
         <div class="col-md-2 sticky-top py-4 vh-100 bg-dark d-flex flex-column justify-content-start"> <!-- Updated classes for centering -->
             <nav class="nav flex-column">
-                <a class="btn btn-dark my-2 w-100 border-bottom" href="{{ url_for('customers') }}">Customers</a> <!-- Use btn and btn-secondary classes for button style -->
-                <a class="btn btn-dark my-2 w-100 border-bottom" href="{{ url_for('services') }}">Services</a>
-                <a class="btn btn-dark my-2 w-100 border-bottom" href="{{ url_for('parts') }}">Parts</a>
-                <a class="btn btn-dark my-2 w-100 border-bottom" href="{{ url_for('booking') }}">Booking</a>
-                <a class="btn btn-dark my-2 w-100 border-bottom" href="{{ url_for('payments') }}">Payments</a>
+                <a class="btn btn-dark py-4 mt-4 ps-5 w-100 fs-4 text-start " href="{{ url_for('customers') }}">Customers</a> <!-- Use btn and btn-secondary classes for button style -->
+                <a class="btn btn-dark py-4 my-0 ps-5 w-100 fs-4 text-start " href="{{ url_for('services') }}">Services</a>
+                <a class="btn btn-dark py-4 my-0 ps-5 w-100 fs-4 text-start " href="{{ url_for('parts') }}">Parts</a>
+                <a class="btn btn-dark py-4 my-0 ps-5 w-100 fs-4 text-start " href="{{ url_for('booking') }}">Booking</a>
+                <a class="btn btn-dark py-4 my-0 ps-5 w-100 fs-4 text-start " href="{{ url_for('payments') }}">Payments</a>
             </nav>
             
             
@@ -19,7 +19,7 @@
         <!-- Right Content Section -->
         <div class="col-md-10">
             {% block admincontent %}
-                <!-- Your admin content goes here -->
+                <!-- Admin content goes here -->
             {% endblock %}
         </div>
     </div>

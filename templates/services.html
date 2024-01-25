@@ -1,41 +1,55 @@
 {% extends "adminpage.html" %}
 {% block admincontent %}
+<div class="container-fluid my-5">
+    <div class="border rounded" style="min-height: 80vh;">
+        <!-- Title Section with Enhanced Background Color -->
+        <div class="bg-primary p-3 rounded-top text-white">
+            <h2 class="mb-0">Service Management</h2>
+        </div>
 
-<div class="p-3 my-4 border rounded shadow-sm"> 
-    <h2 class="h6 my-2">Service Management</h2>
-    <div class="d-flex justify-content-around align-items-center my-3">
-        <a class="btn btn-success btn-sm" href="{{ url_for('customers') }}">Add Service</a>
-        <div class="ms-auto col-3" > 
-            <input class="form-control form-control-sm" type="search" placeholder="Search">
+        <!-- Search and Add Service Section -->
+        <div class="p-3">
+            <div class="row mb-4">
+                <div class="col-lg-6">
+                    <form class="d-flex" action="{{ url_for('customers') }}">
+                        <input class="form-control me-2" type="search" placeholder="Search by Name or Email" aria-label="Search" name="query">
+                        <button class="btn btn-outline-success" type="submit">Search</button>
+                    </form>
+                </div>
+                <div class="col-lg-6 text-end">
+                    <a href="{{ url_for('customers') }}" class="btn btn-success">Add Customer</a>
+                </div>
+            </div>
+
+            
+
+            <!-- Service Table with Scrollable Body -->
+            <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                <table class="table table-bordered table-striped table-hover">
+                    <thead class="text-center table-primary fw-bold sticky-top">
+                        <tr>
+                            <th scope="col">Service ID</th>
+                            <th scope="col">Service Name</th>
+                            <th scope="col">Cost</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-group-divider text-center">
+                        {% for service in service_list %}
+                            <tr>
+                                {% for field in service %}
+                                    <td>{{ field }}</td>
+                                {% endfor %}
+                                <td>           
+                                    <a href="{{ url_for('services') }}" class="btn btn-primary btn-sm">Edit</a> 
+                                    <a href="{{ url_for('services') }}" class="btn btn-danger btn-sm">Delete</a>
+                                </td>
+                            </tr>     
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-    
-    <!-- Scrollable Table Container -->
-    <div style="max-height: 400px; overflow-y: auto;">
-        <table class="table table-bordered table-striped table-hover">
-            <thead class="text-center table-primary fw-bold">
-                <tr>
-                    <th scope="col">Service ID</th>
-                    <th scope="col">Service Name</th>
-                    <th scope="col">Cost</th>
-                    <th scope="col">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="text-center">
-                {% for service in service_list %}
-                    <tr>
-                        {% for field in service %}
-                            <td>{{ field }}</td>
-                        {% endfor %}
-                        <td>           
-                            <a href="{{ url_for('services') }}" class="btn btn-info btn-sm">Edit</a> 
-                            <a href="{{url_for('services')  }}" class="btn btn-danger btn-sm">Delete</a>
-                        </td>
-                    </tr>     
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
 </div>
-
 {% endblock %}

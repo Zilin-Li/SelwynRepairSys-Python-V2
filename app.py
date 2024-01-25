@@ -4,7 +4,6 @@ from flask import request
 from flask import redirect
 from flask import url_for
 from decimal import Decimal
-
 import re
 from datetime import datetime
 import mysql.connector
@@ -255,13 +254,94 @@ def admin():
 @app.route("/admin/customers")
 def customers():
     connection = getCursor()
-    connection.execute("SELECT c.customer_id, \
-                        CONCAT(COALESCE(c.first_name,''), ' ', COALESCE(c.family_name,'')) AS full_name, \
-                        COALESCE(c.email,'') AS email, \
-                        COALESCE(c.phone,'') AS phone \
-                        FROM customer c;")
+    connection.execute("""SELECT c.customer_id, 
+                            COALESCE(c.first_name, '') AS first_name,
+                            COALESCE(c.family_name, '') AS family_name, 
+                            COALESCE(c.email, '') AS email, 
+                            COALESCE(c.phone, '') AS phone 
+                        FROM customer c
+                        ORDER BY c.family_name, c.first_name;""")
     custmerList = connection.fetchall()
     return render_template("customers.html",customer_list=custmerList)  
+
+@app.route("/admin/customers/search",methods=['GET'])
+def search_customer():
+    query = request.args.get('query', '') 
+    like_pattern = f"%{query}%"   
+    connection = getCursor()
+    search_query="""
+    SELECT 
+        customer_id, 
+        COALESCE(first_name, '') AS first_name, 
+        COALESCE(family_name, '') AS family_name, 
+        COALESCE(email, '') AS email, 
+        COALESCE(phone, '') AS phone 
+    FROM 
+        customer 
+    WHERE 
+        first_name LIKE %s OR 
+        family_name LIKE %s
+    ORDER BY 
+        family_name, 
+        first_name
+    """
+    connection.execute(search_query, (like_pattern, like_pattern))
+    customer_list = connection.fetchall()
+    return render_template("customers.html",customer_list=customer_list)  
+
+@app.route('/admin/customers/add', methods=['POST'])
+def add_customer():
+    first_name = request.form['first_name']
+    family_name = request.form['family_name']
+    email = request.form['email']
+    phone = request.form['phone']
+    connection = getCursor()
+    add_query = """
+    INSERT INTO customer (first_name, family_name, email, phone)
+    VALUES (%s, %s, %s, %s)
+    """
+    connection.execute(add_query, (first_name, family_name, email, phone))
+    connection.fetchall()    
+    return redirect(url_for('customers'))
+
+@app.route('/admin/customers/delete', methods=['POST'])
+def delete_customer():
+    customer_id = request.form.get('customer_id') 
+    try:
+        connection = getCursor()
+        connection.execute("DELETE FROM customer WHERE customer_id = %s", (customer_id,))
+        connection.fetchall()
+    except Exception as e:      
+        print(e)
+    return redirect(url_for('customers'))
+
+@app.route('/admin/customers/update', methods=['POST'])
+def update_customer():
+    customer_id = request.form.get('customer_id')
+    first_name = request.form.get('first_name')
+    email = request.form.get('email')
+    phone = request.form.get('phone')
+    try:
+        connection = getCursor()
+        sql = """
+        UPDATE customer
+        SET first_name = %s, email = %s, phone = %s
+        WHERE customer_id = %s
+        """
+        connection.execute(sql, (first_name, email, phone, customer_id))
+        connection.fetchall()
+    except Exception as e:
+        print(e) 
+    return redirect(url_for('customers'))
+
+# @app.route('/admin/customers/delete/<int:customer_id>')
+# def delete_customer(customer_id):
+    
+#     delete_customer_query="""DELETE FROM customer WHERE customer_id = %s;"""
+#     connection = getCursor()
+#     connection.execute(delete_customer_query,(customer_id,))
+#     connection.fetchall()    
+#     return redirect(url_for('customers'))
 
 # Use for service management
 @app.route("/admin/services")
