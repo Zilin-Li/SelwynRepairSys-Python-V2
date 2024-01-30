@@ -11,24 +11,47 @@
         <div class="p-3">
             <div class="row mb-4">
                 <div class="col-lg-6">
-                    <form class="d-flex" action="{{ url_for('customers') }}">
-                        <input class="form-control me-2" type="search" placeholder="Search by Name or Email" aria-label="Search" name="query">
-                        <button class="btn btn-outline-success" type="submit">Search</button>
-                    </form>
+                    
                 </div>
                 <div class="col-lg-6 text-end">
-                    <a href="{{ url_for('customers') }}" class="btn btn-success">Add Customer</a>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addServiceModal">Add Service</button>
+                </div>
+                <!-- The Modal for add customers -->
+                <div class="modal fade" id="addServiceModal" tabindex="-1" aria-labelledby="addServiceModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title" id="addServiceModalLabel">Add New Service</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- Add Service Form -->
+                                <form action="{{ url_for('add_service') }}" method="post">
+                                    <div class="mb-3">
+                                        <label for="serviceName" class="form-label">Service Name</label>
+                                        <input type="text" class="form-control" id="serviceName" name="service_name" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="serviceCost" class="form-label">Cost</label>
+                                        <input type="number" class="form-control" id="serviceCost" name="cost" step="0.01" required>
+                                    </div>
+                            
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-primary">Add Service</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            
-
             <!-- Service Table with Scrollable Body -->
             <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
                 <table class="table table-bordered table-striped table-hover">
                     <thead class="text-center table-primary fw-bold sticky-top">
                         <tr>
-                            <th scope="col">Service ID</th>
+                            <th scope="col">No. </th>
                             <th scope="col">Service Name</th>
                             <th scope="col">Cost</th>
                             <th scope="col">Actions</th>
@@ -37,12 +60,71 @@
                     <tbody class="table-group-divider text-center">
                         {% for service in service_list %}
                             <tr>
-                                {% for field in service %}
-                                    <td>{{ field }}</td>
-                                {% endfor %}
+                                <td>{{ loop.index }}</td>
+                                <td>{{ service[1] }}</td>
+                                <td>$ {{ service[2] }}</td>
                                 <td>           
-                                    <a href="{{ url_for('services') }}" class="btn btn-primary btn-sm">Edit</a> 
-                                    <a href="{{ url_for('services') }}" class="btn btn-danger btn-sm">Delete</a>
+                                    <!-- Edit Button -->
+                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editServiceModal-{{ service[0] }}">Edit</button>
+
+                                    <!-- Edit Modal -->
+                                    <div class="modal fade" id="editServiceModal-{{ service[0] }}" tabindex="-1" aria-labelledby="editServiceModalLabel-{{ service[0] }}" aria-hidden="true">
+                                        <div class="modal-dialog" style = "text-align: left;">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-primary text-white">
+                                                    <h5 class="modal-title" id="editServiceModalLabel-{{ service[0] }}">Edit Customer</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form action="{{ url_for('update_service') }}" method="post">
+                                                        <input type="hidden" name="service_id" value="{{ service[0] }}">
+
+                                                        <div class="mb-3">
+                                                            <label for="serviceName-{{ service[0] }}" class="form-label ">Service Name:</label>
+                                                            <input type="text" class="form-control" id="serviceName-{{ service[0] }}" name="service_name" value="{{ service[1] }}">
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label for="serviceCost-{{ service[0] }}" class="form-label ">Cost:</label>
+                                                             
+                                                            <input type="number" class="form-control" id="serviceCost-{{ service[0] }}" name="cost" value="{{ service[2] }}" step="0.01" required>
+                                                        </div>
+
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                            <button type="submit" class="btn btn-primary">Update Service</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>    
+                                    <!-- Delete Button -->
+                                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteServiceModal" onclick="document.getElementById('deleteServiceId').value = '{{ service[0] }}';">
+                                        Delete
+                                    </button>
+                                    <!-- Delete  Modal -->
+                                    <div class="modal fade" id="deleteServiceModal" tabindex="-1"          aria-labelledby="deleteServiceModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-danger text-white">
+                                                    <h5 class="modal-title" id="deleteServiceModalLabel">Confirm Deletion</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Are you sure you want to delete this service?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <form action="{{ url_for('delete_service') }}" method="post">
+                                                        <input type="hidden" name="service_id" id="deleteServiceId" value="">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>    
+                                    
                                 </td>
                             </tr>     
                         {% endfor %}

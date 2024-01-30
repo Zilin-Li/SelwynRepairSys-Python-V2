@@ -8,10 +8,12 @@
             <h2 class="mb-0">Customer Management</h2>
         </div>
 
-        <!-- Search and Add Customer Section -->
+       
         <div class="p-3">
+            <!-- Search and Add Customer Section -->
             <div class="row mb-4">
-                <div class="col-lg-6">
+                <!-- Search Bar -->
+                <div class="searchbar col-lg-6">
                     <form class="d-flex" action="{{ url_for('search_customer')}}" method="get">
                         <input class="form-control me-2" type="search" placeholder="Search by Name" aria-label="Search" name="query">
                         <button class="btn btn-outline-success" type="submit">Search</button>
@@ -22,8 +24,7 @@
                     <!-- Button to Open the Modal -->
                     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCustomerModal">Add Customer</button>
                 </div>
-
-                <!-- The Modal -->
+                <!-- The Modal for add customers -->
                 <div class="modal fade" id="addCustomerModal" tabindex="-1" aria-labelledby="addCustomerModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
@@ -86,9 +87,9 @@
                                 <!-- Edit Button -->
                                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editCustomerModal-{{ customer[0] }}">Edit</button>
 
-                                <!-- Edit Customer Modal -->
+                                <!-- Edit Modal -->
                                 <div class="modal fade" id="editCustomerModal-{{ customer[0] }}" tabindex="-1" aria-labelledby="editCustomerModalLabel-{{ customer[0] }}" aria-hidden="true">
-                                    <div class="modal-dialog">
+                                    <div class="modal-dialog" style = "text-align: left;">
                                         <div class="modal-content">
                                             <div class="modal-header bg-primary text-white">
                                                 <h5 class="modal-title" id="editCustomerModalLabel-{{ customer[0] }}">Edit Customer</h5>
@@ -99,13 +100,13 @@
                                                     <input type="hidden" name="customer_id" value="{{ customer[0] }}">
 
                                                     <div class="mb-3">
-                                                        <label for="firstName-{{ customer[0] }}" class="form-label ">First Name</label>
+                                                        <label for="firstName-{{ customer[0] }}" class="form-label ">First Name:</label>
                                                         <input type="text" class="form-control" id="firstName-{{ customer[0] }}" name="first_name" value="{{ customer[1] }}">
                                                     </div>
 
                                                     <div class="mb-3">
-                                                        <label for="familyName-{{ customer[0] }}" class="form-label ">Family Name</label>
-                                                        <input type="text" class="form-control" id="familyName-{{ customer[0] }}" name="family_name" value="{{ customer[2] }}" readonly>
+                                                        <label for="familyName-{{ customer[0] }}" class="form-label ">Family Name:</label>
+                                                        <input type="text" class="form-control" id="familyName-{{ customer[0] }}" name="family_name" value="{{ customer[2] }}">
                                                     </div>
 
                                                     <div class="mb-3">
@@ -128,12 +129,11 @@
                                     </div>
                                 </div>
 
-
                                 <!-- Delete Button -->
                                 <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal" onclick="document.getElementById('deleteCustomerId').value = '{{ customer[0] }}';">
                                     Delete
                                 </button>
-                                <!-- Delete Confirmation Modal -->
+                                <!-- Delete  Modal -->
                                 <div class="modal fade" id="deleteConfirmationModal" tabindex="-1"          aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
@@ -159,8 +159,7 @@
                         {% endfor %}
                     </tbody>
                 </table>
-            </div>
-            
+            </div>   
         </div>
     </div>
 </div>

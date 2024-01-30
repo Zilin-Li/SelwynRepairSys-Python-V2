@@ -1,0 +1,77 @@
+{% extends "adminpage.html" %}
+
+{% block admincontent %}
+
+<div class="container bg-light my-5 p-4 border rounded shadow" style="min-height: 85vh;">
+    <div class="row">
+        <!-- Left Column: Schedule Job Form -->
+        <div class="col-lg-3">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5>Schedule Job</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{{ url_for('booking_job') }}">
+                        <!-- Customer Selection -->
+                        <div class="mb-3">
+                            <label for="customer_id" class="form-label">Select Customer</label>
+                            <select class="form-select" id="customerSelect" name="customer_id">
+                                {% for customer in customer_list %}
+                                 <option value="{{ customer[0] }}">{{ (customer[1] + ' ' if customer[1] else '') + (customer[2] if customer[2] else '') }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <!-- Date Selection -->
+                        <div class="mb-3">
+                            <label for="jobDate" class="form-label">Job Date</label>
+                            <input type="date" class="form-control" id="jobDate" name="date" min="{{ current_date }}" required>
+                        </div>
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-success w-100">Schedule Job</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Current Job List -->
+        <div class="col-lg-9">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2>Current Job List</h2>
+                </div>
+                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                        <table class="table table-bordered table-striped table-hover">
+                            <thead class="text-center table-primary fw-bold">
+                                <tr>
+                                    <th scope="col">No. </th>
+                                    <th scope="col">Customer</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Job Progress</th>
+                                    <th scope="col">Job Detail</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-group-divider text-center">
+                                {% for job in job_list %}
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+                                        <td>{{ job[1] }}</td>
+                                        <td>{{ job[2] }}</td>
+                                        <td>{{ job[3] }}</td> 
+                                        <td>
+                                            <a href="{{ url_for('jobdetail', job_id=job[0], from='admin') }}" class="btn btn-primary btn-sm">Details</a>
+                                        </td>
+                                    </tr>                         
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

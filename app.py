@@ -46,6 +46,7 @@ def currentjobs():
 # Used to show the details of a specific job
 @app.route("/currentjobs/jobdetail/<int:job_id>")
 def jobdetail(job_id):
+    
     customer_job_query = """
         SELECT 
             j.job_id,
@@ -132,11 +133,12 @@ def jobdetail(job_id):
     part_total = part_total[0][0] if part_total[0][0] else 0
     update_job_total(job_id, service_total+part_total)
     
+    return_url = 'schedule' if request.args.get('from') == 'admin' else 'currentjobs'
     return render_template("jobdetail.html",customer_job=customer_job_info, \
             services_qty=service_qty_info, parts_qty=part_qty_info, \
             service_list =services_list,  part_list =parts_list, datetime=datetime, \
             service_total=service_total , \
-            part_total=part_total
+            part_total=part_total,back_url=return_url
             )
 
 # Used to add service to a specific job
@@ -253,6 +255,10 @@ def admin():
 # Use for customer management
 @app.route("/admin/customers")
 def customers():
+    customerList =get_customer()
+    return render_template("customers.html",customer_list=customerList)  
+
+def get_customer():
     connection = getCursor()
     connection.execute("""SELECT c.customer_id, 
                             COALESCE(c.first_name, '') AS first_name,
@@ -261,8 +267,7 @@ def customers():
                             COALESCE(c.phone, '') AS phone 
                         FROM customer c
                         ORDER BY c.family_name, c.first_name;""")
-    custmerList = connection.fetchall()
-    return render_template("customers.html",customer_list=custmerList)  
+    return connection.fetchall()
 
 @app.route("/admin/customers/search",methods=['GET'])
 def search_customer():
@@ -319,29 +324,21 @@ def delete_customer():
 def update_customer():
     customer_id = request.form.get('customer_id')
     first_name = request.form.get('first_name')
+    family_name= request.form.get('family_name')
     email = request.form.get('email')
     phone = request.form.get('phone')
     try:
         connection = getCursor()
         sql = """
         UPDATE customer
-        SET first_name = %s, email = %s, phone = %s
+        SET first_name = %s, family_name=%s, email = %s, phone = %s
         WHERE customer_id = %s
         """
-        connection.execute(sql, (first_name, email, phone, customer_id))
+        connection.execute(sql, (first_name,family_name, email, phone, customer_id))
         connection.fetchall()
     except Exception as e:
         print(e) 
     return redirect(url_for('customers'))
-
-# @app.route('/admin/customers/delete/<int:customer_id>')
-# def delete_customer(customer_id):
-    
-#     delete_customer_query="""DELETE FROM customer WHERE customer_id = %s;"""
-#     connection = getCursor()
-#     connection.execute(delete_customer_query,(customer_id,))
-#     connection.fetchall()    
-#     return redirect(url_for('customers'))
 
 # Use for service management
 @app.route("/admin/services")
@@ -353,6 +350,47 @@ def services():
   
     return render_template("services.html",service_list =serviceList )  
 
+@app.route("/admin/services/add", methods=['POST'])
+def add_service():
+    service_name = request.form['service_name']
+    cost = request.form['cost']
+    connection = getCursor()
+    add_query = """
+    INSERT INTO service (service_name, cost)
+    VALUES (%s, %s)
+    """
+    connection.execute(add_query, (service_name, cost))
+    connection.fetchall()    
+    return redirect(url_for('services'))
+    
+@app.route('/admin/services/update', methods=['POST'])
+def update_service():
+    service_id = request.form.get('service_id')
+    service_name = request.form.get('service_name')
+    cost = request.form.get('cost')
+    try:
+        connection = getCursor()
+        sql = """
+        UPDATE service
+        SET service_name = %s, cost=%s
+        WHERE service_id = %s
+        """
+        connection.execute(sql, (service_name,cost, service_id))
+        connection.fetchall()
+    except Exception as e:
+        print(e) 
+    return redirect(url_for('services'))
+@app.route('/admin/services/delete', methods=['POST'])
+def delete_service():
+    service_id = request.form.get('service_id') 
+    try:
+        connection = getCursor()
+        connection.execute("DELETE FROM service WHERE service_id = %s", (service_id,))
+        connection.fetchall()
+    except Exception as e:      
+        print(e)
+    return redirect(url_for('services'))
+    
 # Use for part management
 @app.route("/admin/parts")
 def parts():
@@ -364,12 +402,46 @@ def parts():
     return render_template("parts.html",part_list =partList)  
 
 
-@app.route("/admin/booking")
-def booking():
-  
-    return render_template("booking.html")  
+@app.route("/admin/schedule")
+def schedule(): 
+    connection = getCursor()
+    connection.execute("""
+                SELECT
+                  j.job_id,
+                  CONCAT(COALESCE(c.first_name,''), ' ', COALESCE(c.family_name,'')) AS full_name,
+                  j.job_date,
+                  CASE
+                    WHEN j.completed = 0 THEN 'In Progress'
+                    WHEN j.completed = 1 THEN 'Completed'
+                  END as job_status
+                FROM job j
+                JOIN customer c ON j.customer = c.customer_id
+                ORDER BY j.completed ASC, j.job_date DESC
+            """)
+    jobList = connection.fetchall()
+    customerList =get_customer()
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    return render_template("schedule.html", job_list=jobList, customer_list =customerList,current_date = current_date)
+
+@app.route("/admin/schedule/booking",methods=['POST'])
+def booking_job(): 
+    customer_id = request.form.get('customer_id') 
+    date = request.form.get('date') 
+    connection = getCursor()
+    connection.execute("""
+                INSERT INTO job (customer, job_date, total_cost, completed, paid)
+                VALUES (%s, %s, 0.00, 0, 0)""",(customer_id,date))
+    connection.fetchall()
+    return redirect(url_for('schedule')) 
 
 @app.route("/admin/payments")
-def payments():
+def billpayments():
+    customerList = get_customer()
   
-    return render_template("payments.html")  
+  
+    return render_template("billpayments.html",customer_list =customerList)  
+
+@app.route("/admin/payments/filter")
+def filter_bills():
+    
+    return render_template("billpayments.html")  

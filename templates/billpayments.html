@@ -1,0 +1,60 @@
+{% extends "adminpage.html" %}
+
+{% block admincontent %}
+<div class="container-fluid my-5">
+    <div class="border rounded" style="min-height: 80vh;">
+        <!-- Title Section with Enhanced Background Color -->
+        <div class="bg-primary p-3 rounded-top text-white">
+            <h2 class="mb-0">Unpaid Bills</h2>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="p-3">
+            <div class="row mb-4">
+                <div class="col-lg-6">
+                    <form class="d-flex" action="{{ url_for('filter_bills') }}">
+                        <select class="form-select me-2" aria-label="Filter by Customer" name="customer_id">
+                            <option selected>Choose a Customer</option>
+                            {% for customer in customer_list %}
+                            <option value="{{ customer[0] }}">{{ customer[1] }}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-outline-success" type="submit">Filter</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Unpaid Bills Table with Scrollable Body -->
+            <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                <table class="table table-bordered table-striped table-hover">
+                    <thead class="text-center table-primary fw-bold sticky-top">
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Customer</th>
+                            <th scope="col">Amount</th>
+                            <th scope="col">Job ID</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-group-divider text-center">
+                       
+                            <tr>
+                                <td>2024-01-31</td>
+                                <td>John Doe</td>
+                                <td>$100.00</td>
+                                <td>Job #1234</td>
+                                <td>           
+                                    <button class="btn btn-success btn-sm" >Pay</button>
+                                </td>
+                            </tr>     
+                      
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}

@@ -20,7 +20,8 @@
                             <td>{{field}}</td>
                         {% endfor %}
                         <td>
-                            <a href="{{ url_for('jobdetail', job_id=job[0]) }}" class="btn btn-primary btn-sm">Job detail</a>
+                            <a href="{{ url_for('jobdetail', job_id=job[0], from='technician') }}" class="btn btn-primary btn-sm">Details</a>
+
                         </td>
                     </tr> 
                     
