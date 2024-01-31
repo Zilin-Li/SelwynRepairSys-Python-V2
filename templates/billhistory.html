@@ -1,0 +1,45 @@
+{% extends "adminpage.html" %}
+
+{% block admincontent %}
+<div class="container my-5">
+    <div class="border rounded bg-light shadow">
+        <!-- Title Section -->
+        <div class=" p-3 rounded-top">
+            <h2 class="mb-0">Billing History & Overdue Bills</h2>
+        </div>
+
+        <!-- Customer Group Section -->
+        <div class="container my-5">
+            {% for customer_id, bill_detail in customer_bill.items() %}
+            <div class="card mb-4 shadow-sm"> 
+                <!-- Customer Information Header -->
+                <div class="card-header bg-primary text-white ">
+                    <h3 class="mb-0">{{ customer_id[1] }} -{{ customer_id[2] }} - {{ customer_id[3] }}</h3> 
+                    
+                </div>
+                
+                <!-- Bills List -->
+                <ul class="list-group list-group-flush border-top">
+                    {% for bill in bill_detail %}
+                    <li class="list-group-item {{ 'bg-danger text-white' if bill[5] < overdue_date and not bill[7] }}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div><strong>Date:</strong> {{ bill[5] }}</div>
+                            <div><strong>Total Cost:</strong> ${{ bill[6] }}</div>
+                            <div><strong>Status:</strong>  
+                                {% if bill[-1] == 0 %}
+                                <span class="badge bg-danger">Unpaid</span>
+                                {% else %}
+                                <span class="badge bg-success">Paid</span>
+                                {% endif %}
+                            </div>
+                           
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

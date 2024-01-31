@@ -5,7 +5,7 @@ from flask import redirect
 from flask import url_for
 from decimal import Decimal
 import re
-from datetime import datetime,timedelta,date
+from datetime import datetime
 import mysql.connector
 from mysql.connector import FieldType
 import connect
@@ -15,24 +15,12 @@ app = Flask(__name__)
 dbconn = None
 connection = None
 
-# def getCursor():
-#     global dbconn
-#     global connection
-#     connection = mysql.connector.connect(user=connect.dbuser, \
-#     password=connect.dbpass, host=connect.dbhost, \
-#     database=connect.dbname, autocommit=True)
-#     dbconn = connection.cursor()
-#     return dbconn
-
 def getCursor():
     global dbconn
     global connection
-    if connection is None or not connection.is_connected():
-        connection = mysql.connector.connect(user=connect.dbuser,
-                                             password=connect.dbpass,
-                                             host=connect.dbhost,
-                                             database=connect.dbname,
-                                             autocommit=True)
+    connection = mysql.connector.connect(user=connect.dbuser, \
+    password=connect.dbpass, host=connect.dbhost, \
+    database=connect.dbname, autocommit=True)
     dbconn = connection.cursor()
     return dbconn
 
@@ -43,22 +31,83 @@ def getCursor():
 def home():
     return redirect("/currentjobs")
 
+def get_customer():
+    connection = getCursor()
+    connection.execute("""SELECT c.customer_id, 
+                            COALESCE(c.first_name, '') AS first_name,
+                            COALESCE(c.family_name, '') AS family_name, 
+                            COALESCE(c.email, '') AS email, 
+                            COALESCE(c.phone, '') AS phone 
+                        FROM customer c
+                        ORDER BY c.family_name, c.first_name;""")
+    return connection.fetchall()
+def get_service():
+    connection = getCursor()
+    connection.execute("""
+            SELECT 
+                s.service_id,
+                s.service_name,
+                s.cost                           
+            FROM 
+	            service s
+            ORDER BY 
+                s.service_name ASC;
+            """  )
+    return connection.fetchall()
+
+def get_part():
+    connection = getCursor()
+    connection.execute("""
+            SELECT 
+                p.part_id,
+                p.part_name                           
+            FROM 
+	            part p
+            ORDER BY 
+                p.part_name ASC;
+            """  )
+    return connection.fetchall()
+
+def get_job(customer_id=None):
+    connection = getCursor()
+    query = """
+        SELECT 
+            j.job_id,
+            j.customer,
+            j.job_date,
+            c.first_name,
+            c.family_name,
+            c.email,
+            c.phone,
+            j.total_cost,
+            j.completed,
+            j.paid
+        FROM 
+            job j
+        JOIN 
+            customer c ON j.customer = c.customer_id
+    """ 
+    if customer_id is not None:
+        query += " WHERE c.customer_id = %s"
+    query += " ORDER BY j.job_date ASC, c.family_name ASC, c.first_name ASC;"
+    if customer_id is not None:
+        connection.execute(query, (customer_id,))
+    else:
+        connection.execute(query)
+    return connection.fetchall()
+    
+    
 # Use to display unfinished jobs
+# Order by job date
 @app.route("/currentjobs")
 def currentjobs():
-    connection = getCursor()
-    connection.execute("SELECT j.job_id, CONCAT(COALESCE(c.first_name,''), ' ', COALESCE(c.family_name,'')) AS full_name,j.job_date \
-                        FROM job j \
-                        JOIN customer c ON j.customer = c.customer_id \
-                        where completed=0 ;")
-    jobList = connection.fetchall()
-    
-    return render_template("currentjoblist.html", job_list = jobList)    
+    jobs_data = get_job()
+    uncompleted_jobs = [job for job in jobs_data if job[8] == 0]
+    return render_template("currentjoblist.html", job_list = uncompleted_jobs)    
 
 # Used to show the details of a specific job
 @app.route("/currentjobs/jobdetail/<int:job_id>")
 def jobdetail(job_id):
-    
     customer_job_query = """
         SELECT 
             j.job_id,
@@ -105,47 +154,40 @@ def jobdetail(job_id):
             GROUP BY 
                 p.part_id, p.part_name;
             """  
-    services_query ="""
-            SELECT 
-                s.service_id,
-                s.service_name                           
-            FROM 
-	            service s
-            ORDER BY 
-                s.service_name ASC;
-            """  
-    parts_query ="""
-            SELECT 
-                p.part_id,
-                p.part_name                           
-            FROM 
-	            part p
-            ORDER BY 
-                p.part_name ASC;
-            """  
+    # Get customer information and job detail by job_id
     connection = getCursor()
     connection.execute(customer_job_query, (job_id,))
     customer_job_info=connection.fetchall()
     
+    # Get the name and quantity of services in the job by job_id
     connection.execute(service_qty_query, (job_id,))
     service_qty_info = connection.fetchall()
     
+    # Get the name and quantity of parts in the job by job_id
     connection.execute(part_qty_query, (job_id,))
     part_qty_info = connection.fetchall()
     
-    connection.execute(services_query)
-    services_list = connection.fetchall()
+    # Get all services information 
+    services_list = get_service()
     
-    connection.execute(parts_query)
-    parts_list = connection.fetchall()
+    # Get all parts information 
+    parts_list = get_part()
     
     # Additionally, get the service_total and part_total from the query parameters if they exist.
     service_total ,part_total = calculate_totals(job_id)
     service_total = service_total[0][0] if service_total[0][0] else 0
     part_total = part_total[0][0] if part_total[0][0] else 0
-    update_job_total(job_id, service_total+part_total)
     
+    # Calculate the total cost of the job,and update the total cost of the job to database by job_id.
+    update_job_total(job_id, service_total+part_total)
+   
+    #The Job Detail page is shared between the Technician interface and the Admin interface. 
+    # Therefore, on the Job Detail page, the 'Back' button needs to determine from which interface the user came in 
+    # order to return to the original interface when navigating back.
+    # A 'from' tag was added to the entry button links in both interfaces, 
+    # and on the Job Detail page, this tag is used to determine which interface the user should return to.
     return_url = 'schedule' if request.args.get('from') == 'admin' else 'currentjobs'
+    
     return render_template("jobdetail.html",customer_job=customer_job_info, \
             services_qty=service_qty_info, parts_qty=part_qty_info, \
             service_list =services_list,  part_list =parts_list, datetime=datetime, \
@@ -208,14 +250,12 @@ def add_part_to_job(job_id):
 
 
 @app.route("/currentjobs/jobdetail/complete_job/<int:job_id>")
-
+# Set the job as completed.
 def complete_job(job_id):
-  # Set the job as completed.
-    update_job_status(job_id)
-    
-# Redirect to the job detail page with the updated info.
+    update_job_status(job_id)    
     return redirect(url_for("jobdetail", job_id=job_id))
 
+#   Calculate total cost of servieces and parts
 def calculate_totals(job_id):
     service_total_query ="""
             SELECT SUM(s.cost * js.qty)
@@ -229,16 +269,18 @@ def calculate_totals(job_id):
              JOIN part p ON jp.part_id = p.part_id
             WHERE jp.job_id = %s;
             """  
+    # Get services total cost        
     connection = getCursor()
     connection.execute(service_total_query, (job_id,))
     service_total=connection.fetchall()
-    # service_total=service_total[0]
     
+    # Get parts total cost
     connection.execute(part_total_query, (job_id,))
     part_total=connection.fetchall()
-    # Execute queries to get service total and part total...
+    
     return service_total, part_total
 
+# Update the total cost to a specific job.
 def update_job_total(job_id, total_cost):
     update_job_total="""UPDATE job SET total_cost = %s
                         WHERE job_id = %s"""
@@ -249,6 +291,7 @@ def update_job_total(job_id, total_cost):
     connection.fetchall()
     return
 
+# Set the job as completed.
 def update_job_status(job_id):
     update_job_status="""UPDATE job SET completed = 1 
                         WHERE job_id = %s"""
@@ -270,17 +313,7 @@ def customers():
     customerList =get_customer()
     return render_template("customers.html",customer_list=customerList)  
 
-def get_customer():
-    connection = getCursor()
-    connection.execute("""SELECT c.customer_id, 
-                            COALESCE(c.first_name, '') AS first_name,
-                            COALESCE(c.family_name, '') AS family_name, 
-                            COALESCE(c.email, '') AS email, 
-                            COALESCE(c.phone, '') AS phone 
-                        FROM customer c
-                        ORDER BY c.family_name, c.first_name;""")
-    return connection.fetchall()
-
+# Search customer by enter customer's name -  partial text matches 
 @app.route("/admin/customers/search",methods=['GET'])
 def search_customer():
     query = request.args.get('query', '') 
@@ -306,6 +339,7 @@ def search_customer():
     customer_list = connection.fetchall()
     return render_template("customers.html",customer_list=customer_list)  
 
+# Add a new customer to the database
 @app.route('/admin/customers/add', methods=['POST'])
 def add_customer():
     first_name = request.form['first_name']
@@ -321,6 +355,7 @@ def add_customer():
     connection.fetchall()    
     return redirect(url_for('customers'))
 
+# Delete a customer by customer_id
 @app.route('/admin/customers/delete', methods=['POST'])
 def delete_customer():
     customer_id = request.form.get('customer_id') 
@@ -332,6 +367,7 @@ def delete_customer():
         print(e)
     return redirect(url_for('customers'))
 
+# Update a customer's information
 @app.route('/admin/customers/update', methods=['POST'])
 def update_customer():
     customer_id = request.form.get('customer_id')
@@ -355,13 +391,9 @@ def update_customer():
 # Use for service management
 @app.route("/admin/services")
 def services():
-    connection = getCursor()
-    connection.execute("SELECT s.service_id, s.service_name,s.cost \
-                        FROM service s;")
-    serviceList = connection.fetchall()
-  
+    serviceList = get_service()
     return render_template("services.html",service_list =serviceList )  
-
+# Add a new service
 @app.route("/admin/services/add", methods=['POST'])
 def add_service():
     service_name = request.form['service_name']
@@ -374,7 +406,8 @@ def add_service():
     connection.execute(add_query, (service_name, cost))
     connection.fetchall()    
     return redirect(url_for('services'))
-    
+
+# Update a service information    
 @app.route('/admin/services/update', methods=['POST'])
 def update_service():
     service_id = request.form.get('service_id')
@@ -392,6 +425,8 @@ def update_service():
     except Exception as e:
         print(e) 
     return redirect(url_for('services'))
+
+# Delete a service 
 @app.route('/admin/services/delete', methods=['POST'])
 def delete_service():
     service_id = request.form.get('service_id') 
@@ -428,7 +463,7 @@ def schedule():
                   END as job_status
                 FROM job j
                 JOIN customer c ON j.customer = c.customer_id
-                ORDER BY j.completed ASC, j.job_date DESC
+                ORDER BY j.completed ASC, j.job_date ASC
             """)
     jobList = connection.fetchall()
     customerList =get_customer()
@@ -446,31 +481,13 @@ def booking_job():
     connection.fetchall()
     return redirect(url_for('schedule')) 
 
+
 @app.route("/admin/payments")
 def billpayments():
     customer_list = get_customer()
-    connection = getCursor()
-    connection.execute("""
-                    SELECT 
-                        j.job_id,
-                        j.job_date,
-                        j.total_cost,
-                        c.first_name,
-                        c.family_name,
-                        c.email,
-                        c.phone
-                    FROM 
-                        job j
-                    JOIN 
-                        customer c ON j.customer = c.customer_id
-                    WHERE 
-                        j.completed = 1 AND j.paid = 0
-                    ORDER BY 
-                        j.job_date, c.family_name, c.first_name;
-                    """)
-    jobs_data = connection.fetchall()  
-   
-    return render_template("billpayments.html",jobs_data =jobs_data,customer_list=customer_list) 
+    jobs_data = get_job()  
+    unpaid_jobs = [job for job in jobs_data if job[8] == 1 and (job[9] == 0 or job[9] is None)]
+    return render_template("billpayments.html",unpaid_jobs =unpaid_jobs,customer_list=customer_list) 
  
 @app.route("/admin/payments/paybill/<int:job_id>")
 def pay_bill(job_id):
@@ -482,86 +499,12 @@ def pay_bill(job_id):
     return redirect(url_for('billpayments')) 
 
 
+
 @app.route("/admin/payments/filter", methods=['GET'])
 def customer_filter():
     customer_id = request.args.get('customer_id', default=None, type=int)
-    
-    connection = getCursor()
-    if customer_id and customer_id != -1:  # Assuming -1 or another invalid ID for "Choose a Customer"
-        connection.execute("""
-                        SELECT 
-                            j.job_id,
-                            j.job_date,
-                            j.total_cost,
-                            c.first_name,
-                            c.family_name,
-                            c.email,
-                            c.phone
-                        FROM 
-                            job j
-                        JOIN 
-                            customer c ON j.customer = c.customer_id
-                        WHERE 
-                            j.completed = 1 AND j.paid = 0 AND c.customer_id = %s
-                        ORDER BY 
-                            j.job_date, c.family_name, c.first_name;
-                        """, (customer_id,))
-    else:
-        connection.execute("""
-                        SELECT 
-                            j.job_id,
-                            j.job_date,
-                            j.total_cost,
-                            c.first_name,
-                            c.family_name,
-                            c.email,
-                            c.phone
-                        FROM 
-                            job j
-                        JOIN 
-                            customer c ON j.customer = c.customer_id
-                        WHERE 
-                            j.completed = 1 AND j.paid = 0
-                        ORDER BY 
-                            j.job_date, c.family_name, c.first_name;
-                        """)
-    jobs_data = connection.fetchall()
-    
-    customer_list = get_customer()
-    return render_template("billpayments.html", jobs_data=jobs_data, customer_list=customer_list)
-
-@app.route("/admin/billhistory")
-def billhistory():
-    connection = getCursor()
-    # get all completed jobs
-    connection.execute("""
-        SELECT c.customer_id, 
-            CONCAT(COALESCE(c.first_name,''), ' ', COALESCE(c.family_name,'')) AS full_name, 
-            c.email, 
-            c.phone,
-            j.job_id, 
-            j.job_date, 
-            j.total_cost, 
-            j.paid
-        FROM job j
-        JOIN customer c ON j.customer = c.customer_id
-        WHERE j.completed = 1
-        ORDER BY c.family_name, c.first_name, j.job_date;
-    """)
-    jobs_list = connection.fetchall()
-    # print(jobs_list)
-
-    # group jobs by customer
-    customer_bill = {}
-    for job in jobs_list:
-        customer_key = (job[0], job[1], job[2], job[3])
-        print(job)
-
-        if customer_key not in customer_bill:
-            customer_bill[customer_key] = []
-        customer_bill[customer_key].append(job)
-        pass
-    overdue_date = (datetime.now() - timedelta(days=14)).date()
-
-    return render_template("billhistory.html", customer_bill=customer_bill, overdue_date=overdue_date)
+    jobs_data = get_job(customer_id)
+    unpaid_jobs = [job for job in jobs_data if job[8] == 1 and (job[9] == 0 or job[9] is None)]
+    customer_list = get_customer()  
+    return render_template("billpayments.html", unpaid_jobs=unpaid_jobs, customer_list=customer_list)
 

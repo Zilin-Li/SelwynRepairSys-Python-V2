@@ -72,6 +72,7 @@
                             <th scope="col">Family Name</th>
                             <th scope="col">Email</th>
                             <th scope="col">Phone</th>
+                            <th scope="col">Customer ID</th>
                             <th scope="col">Actions</th>
                         </tr>
                     </thead>
@@ -83,6 +84,7 @@
                             <td>{{ customer[2] }}</td>
                             <td>{{ customer[3] }}</td>
                             <td>{{ customer[4] }}</td>
+                            <td># {{ customer[0] }}</td>
                             <td>
                                 <!-- Edit Button -->
                                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editCustomerModal-{{ customer[0] }}">Edit</button>

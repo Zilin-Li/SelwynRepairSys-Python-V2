@@ -12,11 +12,11 @@
         <div class="p-3">
             <div class="row mb-4">
                 <div class="col-lg-6">
-                    <form class="d-flex" action="{{ url_for('filter_bills') }}">
+                    <form class="d-flex" action="{{ url_for('customer_filter') }}" method="GET">
                         <select class="form-select me-2" aria-label="Filter by Customer" name="customer_id">
-                            <option selected>Choose a Customer</option>
+                            <option selected>Choose a Customer</option>   
                             {% for customer in customer_list %}
-                            <option value="{{ customer[0] }}">{{ customer[1] }}</option>
+                            <option value="{{ customer[0] }}">{{ (customer[1] + ' ' if customer[1] else '') + (customer[2] if customer[2] else '') }}</option>
                             {% endfor %}
                         </select>
                         <button class="btn btn-outline-success" type="submit">Filter</button>
@@ -29,24 +29,35 @@
                 <table class="table table-bordered table-striped table-hover">
                     <thead class="text-center table-primary fw-bold sticky-top">
                         <tr>
+                            <th scope="col">Job ID</th>
                             <th scope="col">Date</th>
                             <th scope="col">Customer</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Phone</th>
                             <th scope="col">Amount</th>
-                            <th scope="col">Job ID</th>
+                            
                             <th scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="table-group-divider text-center">
-                       
-                            <tr>
-                                <td>2024-01-31</td>
-                                <td>John Doe</td>
-                                <td>$100.00</td>
-                                <td>Job #1234</td>
+                        {% for job in jobs_data %}
+                            <tr>   
+                                <td># {{job[0]}}</td>
+                                <td>{{job[1]}}</td>
+                                <td>{{ (job[3] + ' ' if job[3] else '') + (job[4] if job[4] else '') }}</td>
+                                <td>{{job[-2]}}</td>
+                                <td>{{job[-1]}}</td>
+                                <td>$ {{ job[2] if job[2] else 0}}</td>
+                                
                                 <td>           
-                                    <button class="btn btn-success btn-sm" >Pay</button>
-                                </td>
-                            </tr>     
+                                    <a href="{{ url_for('pay_bill', job_id=job[0]) }}" class="btn btn-success }}" style="width: 100%;">Pay Bill</a>
+                                </td> 
+                            </tr>  
+
+                        {% endfor %}
+                            
+                                
+                               
                       
                     </tbody>
                 </table>

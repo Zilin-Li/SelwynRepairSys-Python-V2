@@ -7,7 +7,7 @@
         <table class="table  table-bordered table-striped table-hover">
             <thead class="text-center table-primary fw-bold">
                 <tr>
-                    <th scope="col">Job ID</th>
+                    <th scope="col">Job ID</th>       
                     <th scope="col">Customer</th>
                     <th scope="col">Date</th>
                     <th scope="col">Job detail</th>
@@ -16,12 +16,11 @@
             <tbody class="table-group-divider text-center">
                 {% for job in job_list %}
                     <tr>
-                        {% for field in job %}
-                            <td>{{field}}</td>
-                        {% endfor %}
+                        <td>{{ job[0] }}</td>
+                        <td>{{ job[1]}}</td>
+                        <td>{{ job[2] }}</td>
                         <td>
                             <a href="{{ url_for('jobdetail', job_id=job[0], from='technician') }}" class="btn btn-primary btn-sm">Details</a>
-
                         </td>
                     </tr> 
                     
