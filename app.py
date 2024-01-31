@@ -15,26 +15,26 @@ app = Flask(__name__)
 dbconn = None
 connection = None
 
-# def getCursor():
-#     global dbconn
-#     global connection
-#     connection = mysql.connector.connect(user=connect.dbuser, \
-#     password=connect.dbpass, host=connect.dbhost, \
-#     database=connect.dbname, autocommit=True)
-#     dbconn = connection.cursor()
-#     return dbconn
-
 def getCursor():
     global dbconn
     global connection
-    if connection is None or not connection.is_connected():
-        connection = mysql.connector.connect(user=connect.dbuser,
-                                             password=connect.dbpass,
-                                             host=connect.dbhost,
-                                             database=connect.dbname,
-                                             autocommit=True)
+    connection = mysql.connector.connect(user=connect.dbuser, \
+    password=connect.dbpass, host=connect.dbhost, \
+    database=connect.dbname, autocommit=True)
     dbconn = connection.cursor()
     return dbconn
+
+# def getCursor():
+#     global dbconn
+#     global connection
+#     if connection is None or not connection.is_connected():
+#         connection = mysql.connector.connect(user=connect.dbuser,
+#                                              password=connect.dbpass,
+#                                              host=connect.dbhost,
+#                                              database=connect.dbname,
+#                                              autocommit=True)
+#     dbconn = connection.cursor()
+#     return dbconn
 
 
 # Technician Interface
@@ -53,7 +53,7 @@ def currentjobs():
                         where completed=0 ;")
     jobList = connection.fetchall()
     
-    return render_template("currentjoblist.html", job_list = jobList)    
+    return render_template("/technician/currentjoblist.html", job_list = jobList)    
 
 # Used to show the details of a specific job
 @app.route("/currentjobs/jobdetail/<int:job_id>")
@@ -146,7 +146,7 @@ def jobdetail(job_id):
     update_job_total(job_id, service_total+part_total)
     
     return_url = 'schedule' if request.args.get('from') == 'admin' else 'currentjobs'
-    return render_template("jobdetail.html",customer_job=customer_job_info, \
+    return render_template("/technician/jobdetail.html",customer_job=customer_job_info, \
             services_qty=service_qty_info, parts_qty=part_qty_info, \
             service_list =services_list,  part_list =parts_list, datetime=datetime, \
             service_total=service_total , \
@@ -268,7 +268,7 @@ def admin():
 @app.route("/admin/customers")
 def customers():
     customerList =get_customer()
-    return render_template("customers.html",customer_list=customerList)  
+    return render_template("/admin/customers.html",customer_list=customerList)  
 
 def get_customer():
     connection = getCursor()
@@ -304,7 +304,7 @@ def search_customer():
     """
     connection.execute(search_query, (like_pattern, like_pattern))
     customer_list = connection.fetchall()
-    return render_template("customers.html",customer_list=customer_list)  
+    return render_template("/admin/customers.html",customer_list=customer_list)  
 
 @app.route('/admin/customers/add', methods=['POST'])
 def add_customer():
@@ -360,7 +360,7 @@ def services():
                         FROM service s;")
     serviceList = connection.fetchall()
   
-    return render_template("services.html",service_list =serviceList )  
+    return render_template("/admin/services.html",service_list =serviceList )  
 
 @app.route("/admin/services/add", methods=['POST'])
 def add_service():
@@ -411,9 +411,50 @@ def parts():
                         FROM part p;")
     partList = connection.fetchall()
   
-    return render_template("parts.html",part_list =partList)  
+    return render_template("/admin/parts.html",part_list =partList)  
 
 
+@app.route("/admin/parts/add", methods=['POST'])
+def add_part():
+    part_name = request.form['part_name']
+    cost = request.form['cost']
+    connection = getCursor()
+    add_query = """
+    INSERT INTO part (part_name, cost)
+    VALUES (%s, %s)
+    """
+    connection.execute(add_query, (part_name, cost))
+    connection.fetchall()    
+    return redirect(url_for('parts'))
+    
+@app.route('/admin/parts/update', methods=['POST'])
+def update_part():
+    part_id = request.form.get('part_id')
+    part_name = request.form.get('part_name')
+    cost = request.form.get('cost')
+    try:
+        connection = getCursor()
+        sql = """
+        UPDATE part
+        SET part_name = %s, cost=%s
+        WHERE part_id = %s
+        """
+        connection.execute(sql, (part_name,cost, part_id))
+        connection.fetchall()
+    except Exception as e:
+        print(e) 
+    return redirect(url_for('parts'))
+@app.route('/admin/parts/delete', methods=['POST'])
+def delete_part():
+    part_id = request.form.get('part_id') 
+    try:
+        connection = getCursor()
+        connection.execute("DELETE FROM part WHERE part_id = %s", (part_id,))
+        connection.fetchall()
+    except Exception as e:      
+        print(e)
+    return redirect(url_for('parts'))
+    
 @app.route("/admin/schedule")
 def schedule(): 
     connection = getCursor()
@@ -433,7 +474,7 @@ def schedule():
     jobList = connection.fetchall()
     customerList =get_customer()
     current_date = datetime.now().strftime('%Y-%m-%d')
-    return render_template("schedule.html", job_list=jobList, customer_list =customerList,current_date = current_date)
+    return render_template("/admin/schedule.html", job_list=jobList, customer_list =customerList,current_date = current_date)
 
 @app.route("/admin/schedule/booking",methods=['POST'])
 def booking_job(): 
@@ -470,7 +511,7 @@ def billpayments():
                     """)
     jobs_data = connection.fetchall()  
    
-    return render_template("billpayments.html",jobs_data =jobs_data,customer_list=customer_list) 
+    return render_template("/admin/billpayments.html",jobs_data =jobs_data,customer_list=customer_list) 
  
 @app.route("/admin/payments/paybill/<int:job_id>")
 def pay_bill(job_id):
@@ -528,7 +569,7 @@ def customer_filter():
     jobs_data = connection.fetchall()
     
     customer_list = get_customer()
-    return render_template("billpayments.html", jobs_data=jobs_data, customer_list=customer_list)
+    return render_template("/admin/billpayments.html", jobs_data=jobs_data, customer_list=customer_list)
 
 @app.route("/admin/billhistory")
 def billhistory():
@@ -563,5 +604,5 @@ def billhistory():
         pass
     overdue_date = (datetime.now() - timedelta(days=14)).date()
 
-    return render_template("billhistory.html", customer_bill=customer_bill, overdue_date=overdue_date)
+    return render_template("/admin/billhistory.html", customer_bill=customer_bill, overdue_date=overdue_date)
 
