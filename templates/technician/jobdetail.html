@@ -3,67 +3,61 @@
 
 <div class="container bg-light my-5 p-4 border rounded shadow">
     <div class="row">
-    {% if back_url != 'schedule' %}    
-        <!-- Left Column: Add Services and Parts Forms -->
-        <div class="col-lg-3">
-            <!-- Add Services Form -->
-            <div class="card mb-4">
-                <div class="card-header bg-dark text-white"><h5>Add Service</h5> </div>
-                <div class="card-body">
-                    
-                    <form method="post" action="{{ url_for('add_service_to_job', job_id=customer_job[0][0]) }}">
-                        <div class="mb-3">
-                            <label for="service_id" class="form-label">Service Name</label>
-                            <select class="form-select" id="service_id" name="service_id">
-                                {% for service in service_list %}
-                                <option value="{{ service[0] }}">{{ service[1] }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="service_addqty" class="form-label">Quantity</label>
-                            <input type="number" min="1" max="99" class="form-control" id="service_addqty" name="addqty" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 {{ 'disabled' if customer_job[0][6]  }}">Add Service</button>
-                    </form>
+        {% if back_url != 'schedule' %}
+            <!-- Left Column: Add Services and Parts Forms -->
+            <div class="col-lg-3">
+                <!-- Add Services Form -->
+                <div class="card mb-4">
+                    <div class="card-header bg-dark text-white"><h5>Add Service</h5></div>
+                    <div class="card-body">
+                        <form method="post" action="{{ url_for('add_service_to_job', job_id=customer_job[0][0]) }}">
+                            <div class="mb-3">
+                                <label for="service_id" class="form-label">Service Name</label>
+                                <select class="form-select" id="service_id" name="service_id">
+                                    {% for service in service_list %}
+                                        <option value="{{ service[0] }}">{{ service[1] }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="service_addqty" class="form-label">Quantity</label>
+                                <input type="number" min="1" max="99" class="form-control" id="service_addqty" name="addqty" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 {{ 'disabled' if customer_job[0][6] }}">Add Service</button>
+                        </form>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Add Parts Form -->
-            <div class="card">
-                <div class="card-header bg-dark text-white"><h5>Add Part</h5> </div>
-                <div class="card-body">
-                
-                    <form method="post" action="{{ url_for('add_part_to_job', job_id=customer_job[0][0]) }}">
-                        <div class="mb-3">
-                            <label for="part_id" class="form-label">Part Name</label>
-                            <select class="form-select" id="part_id" name="part_id">
-                                {% for part in part_list %}
-                                <option value="{{ part[0] }}">{{ part[1] }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="part_addqty" class="form-label">Quantity</label>
-                            <input type="number" min="1" max="99" class="form-control" id="part_addqty" name="addqty" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 {{ 'disabled' if customer_job[0][6]  }}">Add Part</button>
-                    </form>
+                <!-- Add Parts Form -->
+                <div class="card">
+                    <div class="card-header bg-dark text-white"><h5>Add Part</h5></div>
+                    <div class="card-body">
+                        <form method="post" action="{{ url_for('add_part_to_job', job_id=customer_job[0][0]) }}">
+                            <div class="mb-3">
+                                <label for="part_id" class="form-label">Part Name</label>
+                                <select class="form-select" id="part_id" name="part_id">
+                                    {% for part in part_list %}
+                                        <option value="{{ part[0] }}">{{ part[1] }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="part_addqty" class="form-label">Quantity</label>
+                                <input type="number" min="1" max="99" class="form-control" id="part_addqty" name="addqty" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 {{ 'disabled' if customer_job[0][6] }}">Add Part</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{{ url_for('complete_job', job_id=customer_job[0][0]) }}" class="btn btn-success {{ 'disabled' if customer_job[0][6] }}" style="width: 100%;">Complete</a>
                 </div>
             </div>
-            <div class="d-flex justify-content-between mt-4">
-            <a href="{{ url_for('complete_job', job_id=customer_job[0][0]) }}" class="btn btn-success {{ 'disabled' if customer_job[0][6]  }}" style="width: 100%;">Complete</a>
-            </div>
-        </div>
-    {% endif %}
+        {% endif %}
 
         <!-- Right Column: Job Details and Tables -->
-    {% if back_url != 'schedule' %} 
-        <div class="col-lg-9">
-    {% else %}
-        <div class="col-lg-12">
-    {% endif %}
-   
+        <div class="{{ 'col-lg-9' if back_url != 'schedule' else 'col-lg-12' }}">
             <!-- Job Details -->
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
@@ -76,7 +70,7 @@
                             <p><strong>Job ID:</strong> {{ customer_job[0][0] }}</p>
                             <p><strong>Job Date:</strong> {{ customer_job[0][4].strftime('%Y-%m-%d') }}</p>
                         </div>
-                        
+
                         <!-- Right Column: Customer, Email, and Phone -->
                         <div class="col-md-6">
                             <p><strong>Customer:</strong> {{ customer_job[0][1] }}</p>
@@ -87,22 +81,24 @@
                 </div>
             </div>
 
-            <div class="p-1" style="{{ 'display: none;' if not(customer_job[0][6]) }};background-color:  #ecf2f9;">
+            <!-- Estimated Cost Section -->
+            <div class="p-1" style="{{ 'display: none;' if not customer_job[0][6] }}; background-color: #ecf2f9;">
                 <p class="fw-bold fs-3 text-center my-4"><strong>Estimated Cost of Repairs - Services and Spare Parts</strong></p>
                 <hr>
-                <div class="d-flex justify-content-around my-3" >
-                    <p class="mb-0 fs-4"><strong class="me-3">Services Total: <span style="color:blue">${{ service_total if service_total else 0}}</span></strong></p> 
-                    <p class="mb-0 fs-4"><strong class="me-3">Parts Total: <span style="color:blue">${{ part_total if part_total else 0}}</span></strong></p> 
-                    <p class="mb-0 fs-4"><strong class="me-3">Grand Total: <span style="color:blue">${{ customer_job[0][5] }}</span></strong> </p>
+                <div class="d-flex justify-content-around my-3">
+                    <p class="mb-0 fs-4"><strong class="me-3">Services Total: <span style="color:blue">${{ service_total if service_total else 0 }}</span></strong></p> 
+                    <p class="mb-0 fs-4"><strong class="me-3">Parts Total: <span style="color:blue">${{ part_total if part_total else 0 }}</span></strong></p> 
+                    <p class="mb-0 fs-4"><strong class="me-3">Grand Total: <span style="color:blue">${{ customer_job[0][5] }}</span></strong></p>
                 </div>
             </div>
-            <!-- Services and Parts Tables -->
-            <!--Services table-->
-            <div class ="mt-5">   
+
+            <!-- Services Table -->
+            <div class="mt-2">   
                 <p class="fw-bold fs-4">Customer Demanded Repairs - Services</p>
-                <div style="max-height: 400px; overflow-y: auto;">  
-                    <table class="table  table-bordered table-striped table-hover">
-                        <thead class="text-center table-primary fw-bold">
+                <div style="max-height: 400px; overflow-y: auto;">   
+                    <table class="table table-bordered table-striped table-hover">
+                        <!-- Table Head -->
+                        <thead class="text-center table-primary fw-bold  sticky-top">
                             <tr>
                                 <th scope="col">Service ID</th>
                                 <th scope="col">Service Name</th>
@@ -111,29 +107,31 @@
                                 <th scope="col">Total Price</th>
                             </tr>
                         </thead>
-                        <tbody class="table-group-divider text-center">
+                        <!-- Table Body -->
+                        <tbody class="text-center">
                             {% for service in services_qty %}
                                 <tr>
                                     {% for field in service %}
-                                        <td>{{field}}</td>                                       
+                                        <td>{{ field }}</td>                                       
                                     {% endfor %}   
                                     <td>{{ service[2] * service[3] }}</td>    
                                 </tr>                         
                             {% endfor %}
                             <tr>
-                                <td colspan="5" class="table-active text-end"><strong>Service Total: &nbsp${{ service_total}}</strong></td>    
+                                <td colspan="5" class="table-active text-end"><strong>Service Total: &nbsp;${{ service_total }}</strong></td>    
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-             <!--Parts table-->
-            <div class ="mt-2">
+            <!-- Parts Table -->
+            <div class="mt-1">
                 <p class="fw-bold fs-4">Customer Demanded Repairs - Parts</p>
                 <div style="max-height: 400px; overflow-y: auto;">  
-                    <table class="table  table-bordered table-striped table-hover">
-                        <thead class="text-center table-primary fw-bold">
+                    <table class="table table-bordered table-striped table-hover">
+                        <!-- Table Head -->
+                        <thead class="text-center table-primary fw-bold sticky-top">
                             <tr>
                                 <th scope="col">Part ID</th>
                                 <th scope="col">Part Name</th>
@@ -142,33 +140,30 @@
                                 <th scope="col">Total Price</th>
                             </tr>
                         </thead>
-                        <tbody class="table-group-divider text-center">
+                        <!-- Table Body -->
+                        <tbody class="text-center">
                             {% for part in parts_qty %}
                                 <tr>
                                     {% for field in part %}
-                                        <td>{{field}}</td>
+                                        <td>{{ field }}</td>
                                     {% endfor %}   
                                     <td>{{ part[2] * part[3] }}</td>                         
                                 </tr>   
                             {% endfor %}   
                             <tr>
-                                <td colspan="5" class="table-active text-end"><strong>Part Total: &nbsp${{ part_total}}</strong></td>    
+                                <td colspan="5" class="table-active text-end"><strong>Part Total: &nbsp;${{ part_total }}</strong></td>    
                             </tr>                
                         </tbody>
                     </table>
                 </div>        
             </div>
-           <!-- <div class="m-2 p-2" style="{{ 'display: none;' if not(customer_job[0][6]) }}">               
-                <h2 class="text-start fs-4"><strong>Total Cost: <span  style="{{ 'display: none;' if not(customer_job[0][6]) }}; color:blue"> ${{ customer_job[0][5] }}</span></strong></h2>                 
-            </div>-->
 
+            <!-- Back Button -->
             <div class="d-flex justify-content-end">
                 <a href="{{ url_for(back_url) }}" class="btn btn-dark my-3" style="width: 20%;">Back</a>
             </div>
-             
         </div>
     </div>
-
 </div>
 
 {% endblock %}

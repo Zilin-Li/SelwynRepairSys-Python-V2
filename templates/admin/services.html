@@ -28,12 +28,12 @@
                                 <!-- Add Service Form -->
                                 <form action="{{ url_for('add_service') }}" method="post">
                                     <div class="mb-3">
-                                        <label for="serviceName" class="form-label">Service Name</label>
-                                        <input type="text" class="form-control" id="serviceName" name="service_name" required>
+                                        <label for="serviceName" class="form-label">Service Name: <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="serviceName" name="service_name" pattern="[A-Za-z0-9 ]+" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="serviceCost" class="form-label">Cost</label>
-                                        <input type="number" class="form-control" id="serviceCost" name="cost" step="0.01" required>
+                                        <label for="serviceCost" class="form-label">Cost: <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="serviceCost" name="cost" step="0.01" min="0" required>
                                     </div>
                             
                                     <div class="modal-footer">
@@ -52,6 +52,7 @@
                     <thead class="text-center table-primary fw-bold sticky-top">
                         <tr>
                             <th scope="col">No. </th>
+                            <th scope="col">Service ID</th>
                             <th scope="col">Service Name</th>
                             <th scope="col">Cost</th>
                             <th scope="col">Actions</th>
@@ -61,6 +62,7 @@
                         {% for service in service_list %}
                             <tr>
                                 <td>{{ loop.index }}</td>
+                                <td># {{ service[0] }}</td>
                                 <td>{{ service[1] }}</td>
                                 <td>$ {{ service[2] }}</td>
                                 <td>           
@@ -80,14 +82,14 @@
                                                         <input type="hidden" name="service_id" value="{{ service[0] }}">
 
                                                         <div class="mb-3">
-                                                            <label for="serviceName-{{ service[0] }}" class="form-label ">Service Name:</label>
-                                                            <input type="text" class="form-control" id="serviceName-{{ service[0] }}" name="service_name" value="{{ service[1] }}">
+                                                            <label for="serviceName-{{ service[0] }}" class="form-label ">Service Name: <span class="text-danger">*</span></label>
+                                                            <input type="text" class="form-control" id="serviceName-{{ service[0] }}" name="service_name" value="{{ service[1] }}" pattern="[A-Za-z0-9 ]+" required>
                                                         </div>
 
                                                         <div class="mb-3">
-                                                            <label for="serviceCost-{{ service[0] }}" class="form-label ">Cost:</label>
+                                                            <label for="serviceCost-{{ service[0] }}" class="form-label ">Cost: <span class="text-danger">*</span></label>
                                                              
-                                                            <input type="number" class="form-control" id="serviceCost-{{ service[0] }}" name="cost" value="{{ service[2] }}" step="0.01" required>
+                                                            <input type="number" class="form-control" id="serviceCost-{{ service[0] }}" name="cost" value="{{ service[2] }}" step="0.01"  min="0" required>
                                                         </div>
 
                                                         <div class="modal-footer">

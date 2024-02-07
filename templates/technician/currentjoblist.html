@@ -1,32 +1,37 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="container" style="max-width: 80%;">
-    <h2 class="text-center my-4">Current Job List</h2>
-    <div style="max-height: 400px; overflow-y: auto;">  
-        <table class="table  table-bordered table-striped table-hover">
-            <thead class="text-center table-primary fw-bold">
-                <tr>
-                    <th scope="col">Job ID</th>       
-                    <th scope="col">Customer</th>
-                    <th scope="col">Date</th>
-                    <th scope="col">Job detail</th>
-                </tr>
-            </thead>
-            <tbody class="table-group-divider text-center">
-                {% for job in job_list %}
+<div class="container-fluid my-5" style="max-width: 80%;">
+    <div class="border rounded" >
+        <div class="bg-primary p-3 rounded-top text-white">
+            <h2 class="mb-0">Current Job List</h2>
+        </div>
+       
+        <div class="p-3" >  
+            <table class="table table-bordered table-striped table-hover" >
+                <thead class="text-center table-primary fw-bold sticky-top">
                     <tr>
-                        <td>{{ job[0] }}</td>
-                        <td>{{ job[1]}}</td>
-                        <td>{{ job[2] }}</td>
-                        <td>
-                            <a href="{{ url_for('jobdetail', job_id=job[0], from='technician') }}" class="btn btn-primary btn-sm">Details</a>
-                        </td>
-                    </tr> 
-                    
-                {% endfor %}
-            </tbody>
-        </table>
+                        <th scope="col">Job ID</th>       
+                        <th scope="col">Customer</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Job detail</th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider text-center">
+                    {% for job in job_list %}
+                        <tr>
+                            <td>{{ job[0] }}</td>
+                            <td>{{ job[1]}}</td>
+                            <td>{{ job[2] }}</td>
+                            <td>
+                                <a href="{{ url_for('jobdetail', job_id=job[0], from='technician') }}" class="btn btn-primary btn-sm">Details</a>
+                            </td>
+                        </tr> 
+                        
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
