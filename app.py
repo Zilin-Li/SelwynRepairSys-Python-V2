@@ -2,13 +2,14 @@ from datetime import datetime, timedelta, date
 from decimal import Decimal
 import re
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 import mysql.connector
 from mysql.connector import FieldType
 
 import connect
 
 app = Flask(__name__)
+app.secret_key = "spb+_@#$"
 
 dbconn = None
 connection = None
@@ -252,9 +253,9 @@ def calculate_totals(job_id):
 
     return service_total, part_total
 
-# Updates the total cost of a job in the database.
-def update_job_total(job_id, total_cost):
 
+def update_job_total(job_id, total_cost):
+# Updates the total cost of a job in the database.
     update_job_total_query = "UPDATE job SET total_cost = %s WHERE job_id = %s"
     total_cost_value = total_cost[0] if isinstance(total_cost, tuple) else total_cost
 
@@ -384,15 +385,17 @@ def add_customer():
 
     # Validate family name
     if not family_name or not re.match(r"[A-Za-z]+", family_name):
-        return "Family Name is required and must contain only letters."
-
+        flash("Family Name is required and must contain only letters.","error")
+        return redirect(url_for('customers'))
     # Validate email
     if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        return "Invalid email address."
+        flash("Invalid email address.","error")
+        return redirect(url_for('customers'))
 
     # Validate phone number
     if phone and not re.match(r"[0-9]+", phone):
-        return "Phone number must be 10 digits and contain only numbers."
+        flash("Phone number must be 10 digits and contain only numbers.","error")
+        return redirect(url_for('customers'))
 
     try:
         connection = getCursor()
@@ -401,6 +404,7 @@ def add_customer():
         VALUES (%s, %s, %s, %s)
         """
         connection.execute(add_query, (first_name, family_name, email, phone))
+        flash("The customer has been added.","success")
     except Exception as e:
         print(f"An error occurred: {e}")
       
@@ -414,9 +418,10 @@ def delete_customer():
     try:
         connection = getCursor()
         connection.execute("DELETE FROM customer WHERE customer_id = %s", (customer_id,))
+        flash("The user has been deleted.","success")
     except Exception as e:
         print(f"An error occurred while deleting the customer: {e}")
-       
+        flash("The user has a job associated with it and cannot be deleted.","error")
     return redirect(url_for('customers'))
 
 
@@ -432,15 +437,18 @@ def update_customer():
 
     # Validate family name
     if not family_name or not re.match(r"[A-Za-z]+", family_name):
-        return "Family Name is required and must contain only letters."
+        flash("Family Name is required and must contain only letters.","error")
+        return redirect(url_for('customers'))
 
     # Validate email
     if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        return "Invalid email address."
+        flash("Invalid email address.","error")
+        return redirect(url_for('customers')) 
 
     # Validate phone number
     if phone and not re.match(r"[0-9]+", phone):
-        return "Phone number must be 10 digits and contain only numbers."
+        flash( "Phone number must be 10 digits and contain only numbers.","error")
+        return redirect(url_for('customers')) 
 
     try:
         connection = getCursor()
@@ -450,11 +458,11 @@ def update_customer():
         WHERE customer_id = %s
         """
         connection.execute(update_sql, (first_name, family_name, email, phone, customer_id))
+        flash( "Customer information has been updated","success")
     except Exception as e:
         print(f"An error occurred while updating the customer: {e}")
 
     return redirect(url_for('customers'))
-
 
 @app.route("/admin/services")
 # Displays the list of services for management.
@@ -482,15 +490,18 @@ def add_service():
 
     # Validate service name
     if not service_name:
-        return "Service name is required."
+        flash( "Service name is required.","error")
+        return redirect(url_for('services')) 
 
     # Validate and convert cost
     try:
         cost = float(cost)
         if cost < 0:
-            return "Cost cannot be negative."
+            flash( "Cost cannot be negative.","error")
+            return redirect(url_for('services')) 
     except ValueError:
-        return "Invalid cost value."
+        flash( "Invalid cost value.","error")
+        return redirect(url_for('services')) 
 
     # Insert service into database
     try:
@@ -500,6 +511,7 @@ def add_service():
             VALUES (%s, %s)
         """
         connection.execute(add_query, (service_name, cost))
+        flash("The service has been added.","success")
     except Exception as e:
         print(f"An error occurred while adding a service: {e}")
        
@@ -516,15 +528,18 @@ def update_service():
 
     # Validate service name
     if not service_name:
-        return "Service name is required."
+        flash( "Service name is required.","error")
+        return redirect(url_for('services')) 
 
     # Validate and convert cost
     try:
         cost = float(cost)
         if cost < 0:
-            return "Cost cannot be negative."
+            flash( "Cost cannot be negative.","error")
+            return redirect(url_for('services')) 
     except ValueError:
-        return "Invalid cost value."
+        flash( "Invalid cost value.","error")
+        return redirect(url_for('services')) 
 
     # Attempt to update the service in the database
     try:
@@ -535,6 +550,7 @@ def update_service():
             WHERE service_id = %s
         """
         connection.execute(sql, (service_name, cost, service_id))
+        flash("The service has been updated.","success")
     except Exception as e:
         print(f"An error occurred while updating the service: {e}")
         
@@ -549,8 +565,10 @@ def delete_service():
         connection = getCursor()
         connection.execute("DELETE FROM service WHERE service_id = %s", (service_id,))
         connection.fetchall()
+        flash("The service has been deleted.","success")
     except Exception as e:      
         print(e)
+        flash("The service has a job associated with it and cannot be deleted.","error")
     return redirect(url_for('services'))
     
 
@@ -577,14 +595,16 @@ def add_part():
     
     # Backend Validations
     if not part_name:
-        return "Part name is required."
-
+        flash("Part name is required.","error")
+        return redirect(url_for('parts')) 
     try:
         cost = float(cost)
         if cost < 0:
-            return "Cost cannot be negative."
+            flash("Cost cannot be negative.","error")
+            return redirect(url_for('parts')) 
     except ValueError:
-        return "Invalid cost value."
+        flash("Invalid cost value.","error")
+        return redirect(url_for('parts')) 
     
     add_query = """
     INSERT INTO part (part_name, cost)
@@ -594,6 +614,7 @@ def add_part():
         connection = getCursor()
         connection.execute(add_query, (part_name, cost))
         connection.fetchall()   
+        flash("The part has been added.","success")
     except Exception as e:      
         print(e)     
     return redirect(url_for('parts'))
@@ -608,14 +629,16 @@ def update_part():
     
      # Backend Validations
     if not part_name:
-        return "Part name is required."
-
+        flash("Part name is required.","error")
+        return redirect(url_for('parts')) 
     try:
         cost = float(cost)
         if cost < 0:
-            return "Cost cannot be negative."
+            flash("Cost cannot be negative.","error")
+            return redirect(url_for('parts')) 
     except ValueError:
-        return "Invalid cost value."
+        flash("Invalid cost value.","error")
+        return redirect(url_for('parts')) 
     
     try:
         connection = getCursor()
@@ -626,6 +649,7 @@ def update_part():
         """
         connection.execute(sql, (part_name,cost, part_id))
         connection.fetchall()
+        flash("The part has been updated.","success")
     except Exception as e:
         print(e) 
     return redirect(url_for('parts'))
@@ -638,13 +662,12 @@ def delete_part():
         connection = getCursor()
         connection.execute("DELETE FROM part WHERE part_id = %s", (part_id,))
         connection.fetchall()
+        flash("The part has been deleted.","success")
     except Exception as e:      
         print(e)
+        flash("The part has a job associated with it and cannot be deleted.","error")
     return redirect(url_for('parts'))
-
-    
-    
-    
+   
 @app.route("/admin/schedule")
 #Displays the job schedule in the admin interface.
 # Fetches and lists all jobs with their status and associated customer details.
@@ -704,6 +727,7 @@ def booking_job():
             VALUES (%s, %s, 0.00, 0, 0)
         """, (customer_id, date))
         connection.fetchall()
+        flash("The job has been added.","success")
     except Exception as e:      
         print(f"An error occurred while booking the job: {e}")
 
@@ -748,6 +772,7 @@ def pay_bill(job_id):
         connection = getCursor()
         connection.execute(update_payment_status,(job_id,))
         connection.fetchall()
+        flash("The bill has been paid.","success")
     except Exception as e:      
         print(e)    
     return redirect(url_for('billpayments')) 
