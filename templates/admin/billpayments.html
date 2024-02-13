@@ -29,6 +29,7 @@
                 <table class="table table-bordered table-striped table-hover">
                     <thead class="text-center table-primary fw-bold sticky-top">
                         <tr>
+                            <th scope="col">No. </th>
                             <th scope="col">Job ID</th>
                             <th scope="col">Date</th>
                             <th scope="col">Customer</th>
@@ -41,7 +42,8 @@
                     </thead>
                     <tbody class="table-group-divider text-center">
                         {% for job in jobs_data %}
-                            <tr>   
+                            <tr>
+                                <td>{{ loop.index }}</td>   
                                 <td># {{job[0]}}</td>
                                 <td>{{job[1]}}</td>
                                 <td>{{ (job[3] + ' ' if job[3] else '') + (job[4] if job[4] else '') }}</td>
