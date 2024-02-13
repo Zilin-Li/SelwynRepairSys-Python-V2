@@ -87,7 +87,7 @@ The Admin Interface facilitates the management of customers, services, parts, sc
     - **Function**: `delete_customer()`
     - **Method**: POST
     - **Action**: Deletes a customer from the database.
-    - **Data Flow**: Receives customer ID from the form, deletes the customer record from the database, and redirects back to the customer management page with a success or error message.
+    - **Data Flow**: Receives customer ID from the form, deletes the customer record from the database, handling errors if the customer is associated with existing jobs.Redirects back to the customer management page with a success or error message.
 
   - **Route**: `/admin/customers/update`
     - **Function**: `update_customer()`
@@ -210,6 +210,27 @@ This section outlines the pivotal design choices made during the development of 
 
 - **Intuitive Navigation**: Designed a clear and consistent navigation structure, with a top navigation bar for easy access to main sections.
 
+### Some details about the design
+- **Current job list**: Sort first by date in ascending order to help technicians prioritize upcoming work, then by user's first name and last name.
+
+- **Job detail**: 
+    - This page is shared with the admin interface.  When accessed from the technician's side, it allows adding services and parts, and the option to mark work as completed.  The back button returns to the technician's interface.  When accessed from the admin side, to prevent mishandling, the functionalities for adding services and parts, and marking work as completed are hidden, only allowing the viewing of current work status.  The back button then returns to the admin interface.
+
+  - Use a left-right layout for easy operation.  
+  - Display used services and parts in a table, with items sorted by the order they were added.  
+  - When parts and services are added, display their total prices at the bottom of their respective tables.  Upon clicking the complete button, highlight the total job price, parts total, and services total in larger font and noticeable blue.  
+  - After completion, disable the buttons for adding services and parts, as well as the complete button, and indicate the work completion status in the job detail section.
+
+- **Customer/Service/part Management**:
+  - Leverage Bootstrap's unique modal functionality for add, edit, and delete operations.  This approach enhances user experience and operational efficiency by avoiding page redirects, aligning with current trends in web design.
+  - Implemented both client-side and server-side validation for robust data integrity and security.
+
+- **Job Scheduling**: 
+    - Use a left-right layout for easy navigation. 
+    - The "Current job list" displays all job records, prioritizing ongoing jobs over completed ones for managerial convenience. Jobs are further sorted by work date in ascending order to easily identify the most immediate tasks.
+    - Future updates should include search functionality and sorting options to cater to diverse managerial inquiry needs.
+
+- **Bill Payments**: Display all users in a dropdown list. For the customer filter, there are several design options: using a search function similar to the customer management page, displaying all users in a dropdown list, or showing only the names of unpaid customers in a dropdown list. To avoid redundancy with previous search functionalities, the current implementation uses a dropdown list to show all users. This feature can be adjusted as per user requirements.
 
 
 ## Database Questions:

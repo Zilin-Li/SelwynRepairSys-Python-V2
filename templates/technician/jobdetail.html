@@ -69,6 +69,13 @@
                         <div class="col-md-6">
                             <p><strong>Job ID:</strong> {{ customer_job[0][0] }}</p>
                             <p><strong>Job Date:</strong> {{ customer_job[0][4].strftime('%Y-%m-%d') }}</p>
+                            <p><strong>Status:</strong>  
+                                {% if customer_job[0][6] == 0 %}
+                                <span class="badge bg-danger">In Process</span>
+                                {% else %}
+                                <span class="badge bg-success">Completed</span>
+                                {% endif %}
+                            </p>
                         </div>
 
                         <!-- Right Column: Customer, Email, and Phone -->
